@@ -148,6 +148,7 @@
     <ClCompile Include="TimeManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AppInfo.h" />
     <ClInclude Include="ConsoleUtils.h" />
     <ClInclude Include="CustomList.h" />
     <ClInclude Include="CustomVector.h" />

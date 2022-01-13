@@ -51,7 +51,7 @@ void Player::Update(Map* _map, USER_INPUTS input, std::vector<Enemy>* enemies)
         _map->SetTile(newPos.X, newPos.Y, Map::MAP_TILES::MAP_EMPTY);
         break;
     case Map::MAP_TILES::MAP_POWERUP:
-        points += 100;
+        points += POWERUP_PICKUP;
         _map->SetTile(newPos.X, newPos.Y, Map::MAP_TILES::MAP_EMPTY);
         for (size_t i = 0; i < enemies->size(); i++)
         {

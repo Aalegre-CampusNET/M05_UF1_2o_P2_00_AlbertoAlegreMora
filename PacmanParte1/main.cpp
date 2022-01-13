@@ -1,9 +1,4 @@
-#include "Map.h"
-#include "Enemy.h"
-#include "TimeManager.h"
-#include <vector>
-#include "CustomVector.h"
-#include "Player.h"
+#include "AppInfo.h"
 
 /// <summary>
 /// Sets the needed variables
@@ -22,17 +17,12 @@ void Logic();
 /// </summary>
 void Draw();
 
-Map pacman_map = Map();
-std::vector<Enemy> enemies;
-Player player = Player(pacman_map.spawn_player);
-USER_INPUTS input = USER_INPUTS::NONE;
-bool run = true;
-bool win = false;
+AppInfo info;
 
 int main()
 {
     Setup();
-    while (run)
+    while (info.run)
     {
         Input();
         Logic();
@@ -53,104 +43,109 @@ void Setup()
         totalEnemies = 1;
     for (size_t i = 0; i < totalEnemies; i++)
     {
-        enemies.push_back(Enemy(pacman_map.spawn_enemy, 5.0f * i));
+        info.enemies.push_back(Enemy(info.pacman_map.spawn_enemy, 5.0f * i));
     }
 
 }
 
 void Input()
 {
-    input = USER_INPUTS::NONE;
+    info.input = USER_INPUTS::NONE;
     if (ConsoleUtils::KeyPressed(VK_UP) || ConsoleUtils::KeyPressed('W'))
     {
-        input = USER_INPUTS::UP;
+        info.input = USER_INPUTS::UP;
     }
     if (ConsoleUtils::KeyPressed(VK_DOWN) || ConsoleUtils::KeyPressed('S'))
     {
-        input = USER_INPUTS::DOWN;
+        info.input = USER_INPUTS::DOWN;
     }
     if (ConsoleUtils::KeyPressed(VK_RIGHT) || ConsoleUtils::KeyPressed('D'))
     {
-        input = USER_INPUTS::RIGHT;
+        info.input = USER_INPUTS::RIGHT;
     }
     if (ConsoleUtils::KeyPressed(VK_LEFT) || ConsoleUtils::KeyPressed('A'))
     {
-        input = USER_INPUTS::LEFT;
+        info.input = USER_INPUTS::LEFT;
     }
     if (ConsoleUtils::KeyPressed(VK_ESCAPE) || ConsoleUtils::KeyPressed('Q'))
     {
-        input = USER_INPUTS::QUIT;
+        info.input = USER_INPUTS::QUIT;
     }
 }
 
 void Logic()
 {
-    if (win)
+    if (info.win || info.loose)
     {
-        switch (input)
+        switch (info.input)
         {
         case QUIT:
-            run = false;
+            info.run = false;
             break;
         }
     }
     else
     {
 
-        switch (input)
+        switch (info.input)
         {
         case QUIT:
-            run = false;
+            info.run = false;
             break;
         }
 
-        player.Update(&pacman_map, input, &enemies);
+        info.player.Update(&info.pacman_map, info.input, &info.enemies);
 
-        if (pacman_map.points <= 0)
+        if (info.pacman_map.points <= 0)
         {
-            win = true;
+            info.win = true;
         }
 
 
-        for (size_t i = 0; i < enemies.size(); i++)
+        for (size_t i = 0; i < info.enemies.size(); i++)
         {
-            switch (enemies[i].Update(&pacman_map, player.position))
+            switch (info.enemies[i].Update(&info.pacman_map, info.player.position))
             {
             case Enemy::ENEMY_STATE::ENEMY_EATED:
-                //player_x = pacman_map.spawn_player.X;
-                //player_y = pacman_map.spawn_player.Y;
+                info.player.position = info.player.spawn;
+                info.player.life--;
                 break;
             case Enemy::ENEMY_STATE::ENEMY_KILLED:
-                enemies[i].Kill();
-                player.points += 50;
+                info.enemies[i].Kill();
+                info.player.points += 50;
                 break;
             default:
                 break;
             }
         }
-        //if (player.life <= 0) {
-
-        //}
+        if (info.player.life <= 0) {
+            info.loose = true;
+        }
     }
 }
 
 void Draw()
 {
     ConsoleUtils::Console_SetPos(0,0);
-    pacman_map.Draw();
+    info.pacman_map.Draw();
 
-    player.Draw();
-    for (size_t i = 0; i < enemies.size(); i++)
+    info.player.Draw();
+    for (size_t i = 0; i < info.enemies.size(); i++)
     {
-        enemies[i].Draw();
+        info.enemies[i].Draw();
     }
-    ConsoleUtils::Console_ClearCharacter({ 0,(short)pacman_map.Height });
+    ConsoleUtils::Console_ClearCharacter({ 0,(short)info.pacman_map.Height });
     ConsoleUtils::Console_SetColor(ConsoleUtils::CONSOLE_COLOR::CYAN);
-    std::cout << "Puntuacion actual: " << player.points << " Puntuacion pendiente: " << pacman_map.points << std::endl;
-    if (win)
+    std::cout << "Puntuacion actual: " << info.player.points << " Puntuacion pendiente: " << info.pacman_map.points << std::endl;
+    if (info.win)
     {
         ConsoleUtils::Console_SetColor(ConsoleUtils::CONSOLE_COLOR::GREEN);
         std::cout << "Has ganado!" << std::endl;
+    }
+    if (info.loose)
+    {
+        ConsoleUtils::Console_SetColor(ConsoleUtils::CONSOLE_COLOR::RED);
+        std::cout << "Has perdido!" << std::endl;
     }
 
     std::cout << TimeManager::getInstance().frameCount << std::endl;
